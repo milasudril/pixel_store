@@ -1,39 +1,19 @@
-#ifndef PIXELSTORE_IMAGE_HPP
-#define PIXELSTORE_IMAGE_HPP
+#ifndef PIXELSTORE_IMAGESPAN_HPP
+#define PIXELSTORE_IMAGESPAN_HPP
 
-#include "./image_span.hpp"
-
-#include <memory>
-#include <algorithm>
+#include <cstddef>
 
 namespace pixel_store
 {
 	template<class T>
-	class image
+	class image_span
 	{
 	public:
-		explicit image(uint32_t width, uint32_t height):
-			m_pixels{std::make_unique<T[]>(static_cast<size_t>(width) * static_cast<size_t>(height))},
+		explicit image_span(T* ptr, size_t width, size_t height):
+			m_pixels{ptr},
 			m_width{width},
 			m_height{height}
 		{}
-
-		image(image&&) = default;
-		image& operator=(image&&) = default;
-
-		explicit image(image_span<T const> img):image{img.width(), img.height()}
-		{
-			std::copy_n(img.m_pixels.get(), width()*height(), m_pixels.get());
-		}
-
-		image(image const& other):image{other.pixels()}{}
-
-		image& operator=(image const& other)
-		{
-			image tmp{other};
-			*this = std::move(other);
-			return *this;
-		}
 
 		image_span<T const> pixels() const
 		{
@@ -68,13 +48,13 @@ namespace pixel_store
 		}
 
 	private:
-		std::unique_ptr<T[]> m_pixels;
+		T* m_pixels;
 		size_t m_width;
 		size_t m_height;
 	};
 
 	template<class T>
-	size_t area(image<T> const& img)
+	size_t area(image_span<T> img)
 	{
 		return img.width() * img.height();
 	}
