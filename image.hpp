@@ -2,6 +2,7 @@
 #define PIXELSTORE_IMAGE_HPP
 
 #include <memory>
+#include <algorithm>
 
 namespace pixel_store
 {
@@ -10,10 +11,27 @@ namespace pixel_store
 	{
 	public:
 		explicit image(uint32_t width, uint32_t height):
-			m_pixels{std::make_unique<T[]>(static_cast<size_t>(width) *  static_Cast<size_t>(height))},
+			m_pixels{std::make_unique<T[]>(static_cast<size_t>(width) * static_Cast<size_t>(height))},
 			m_width{width},
 			m_height{height}
 		{}
+
+		image(image&&) = default;
+		image& operator=(image&&) = default;
+
+		explicit image(image_span<T const> img):image{img.width(), img.height()}
+		{
+			std::copy_n(img.m_pixels.get(), width()*height(), m_pixels.get());
+		}
+
+		image(image const& other):image{other.pixels()}{}
+
+		image& operator=(image const& other)
+		{
+			image tmp{other};
+			*this = std::move(other);
+			return *this;
+		}
 
 		image_span<T const> pixels() const
 		{
@@ -52,6 +70,11 @@ namespace pixel_store
 		size_t m_width;
 		size_t m_height;
 	};
+
+	size_t area(image const& img)
+	{
+		return img.width() * img.height();
+	}
 }
 
 #endif
