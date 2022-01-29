@@ -19,7 +19,7 @@ namespace pixel_store
 		};
 	}
 
-	namespace color_profiles
+	namespace intensity_mappings
 	{
 		struct linear
 		{
@@ -39,7 +39,7 @@ namespace pixel_store
 				return vec4_t<float>{std::pow(val[0], 1.0f/gamma_val),
 					std::pow(val[1], 1.0f/gamma_val),
 					std::pow(val[2], 1.0f/gamma_val),
-					std::pow(val[3], 1.0f/gamma_val)};
+					val[3]};
 			}
 
 			static constexpr auto from_linear(vec4_t<float> val)
@@ -48,17 +48,17 @@ namespace pixel_store
 				return vec4_t<float>{std::pow(val[0], gamma_val),
 					std::pow(val[1], gamma_val),
 					std::pow(val[2], gamma_val),
-					std::pow(val[3], gamma_val)};
+					val[3]};
 			}
 		};
 	}
 
-	template<class T = float, class ColorProfile = color_profiles::linear>
+	template<class T = float, class IntensityMapping = intensity_mappings::linear>
 	class rgba_value
 	{
 	public:
 		using value_type = T;
-		using color_profile = ColorProfile;
+		using color_profile = IntensityMapping;
 
         rgba_value() = default;
 
@@ -117,22 +117,22 @@ namespace pixel_store
 	constexpr To convert_to(rgba_value<float> from);
 
 	template<class To>
-	constexpr To convert_to(rgba_value<uint8_t, color_profiles::gamma<>> from);
+	constexpr To convert_to(rgba_value<uint8_t, intensity_mappings::gamma<>> from);
 
 	template<>
-	constexpr rgba_value<uint8_t, color_profiles::gamma<>>
-	convert_to<rgba_value<uint8_t, color_profiles::gamma<>>>(rgba_value<float> from)
+	constexpr rgba_value<uint8_t, intensity_mappings::gamma<>>
+	convert_to<rgba_value<uint8_t, intensity_mappings::gamma<>>>(rgba_value<float> from)
 	{
-		using profile = color_profiles::gamma<>;
+		using profile = intensity_mappings::gamma<>;
 		auto val = 255.0f*profile::from_linear(from.value());
 		return rgba_value<uint8_t, profile>{vector_cast<uint8_t>(val)};
 	}
 
 	template<>
-	constexpr rgba_value<> convert_to<rgba_value<>>(rgba_value<uint8_t, color_profiles::gamma<>> from)
+	constexpr rgba_value<> convert_to<rgba_value<>>(rgba_value<uint8_t, intensity_mappings::gamma<>> from)
 	{
 		auto val = vector_cast<float>(from.value())/255.0f;
-		using profile = color_profiles::gamma<>;
+		using profile = intensity_mappings::gamma<>;
 		return rgba_value<>{profile::to_linear(val)};
 	}
 
