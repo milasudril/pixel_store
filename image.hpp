@@ -67,6 +67,16 @@ namespace pixel_store
 			return m_height;
 		}
 
+		T* data()
+		{
+			return m_pixels.get();
+		}
+
+		T const* data() const
+		{
+			return m_pixels.get();
+		}
+
 	private:
 		std::unique_ptr<T[]> m_pixels;
 		size_t m_width;
@@ -77,6 +87,12 @@ namespace pixel_store
 	size_t area(image<T> const& img)
 	{
 		return img.width() * img.height();
+	}
+
+	template<class T>
+	auto make_span(image<T> const& img)
+	{
+		return std::span{std::data(img), area(img)};
 	}
 }
 
