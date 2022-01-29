@@ -12,6 +12,8 @@ namespace pixel_store
 	class image
 	{
 	public:
+		image():m_pixels{nullptr}, m_width{0}, m_height{0} {}
+
 		explicit image(uint32_t width, uint32_t height):
 			m_pixels{std::make_unique<T[]>(static_cast<size_t>(width) * static_cast<size_t>(height))},
 			m_width{width},

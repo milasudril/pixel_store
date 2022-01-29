@@ -2,6 +2,7 @@
 #define PIXELSTORE_IMAGESPAN_HPP
 
 #include <cstddef>
+#include <span>
 
 namespace pixel_store
 {
@@ -47,6 +48,11 @@ namespace pixel_store
 			return m_height;
 		}
 
+		T* data() const
+		{
+			return m_pixels;
+		}
+
 	private:
 		T* m_pixels;
 		size_t m_width;
@@ -57,6 +63,12 @@ namespace pixel_store
 	size_t area(image_span<T> img)
 	{
 		return img.width() * img.height();
+	}
+
+	template<class T>
+	auto make_span(image_span<T> const& img)
+	{
+		return std::span{std::data(img), area(img)};
 	}
 }
 
