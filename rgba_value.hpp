@@ -2,6 +2,7 @@
 #define PIXELSTORE_RGBAVALUE_HPP
 
 #include <cmath>
+#include <cstdint>
 
 namespace pixel_store
 {
@@ -9,7 +10,7 @@ namespace pixel_store
 	using vec4_t [[gnu::vector_size(4*sizeof(T))]] = T;
 
 	template<class To, class From>
-	constexpr To vector_cast(vec4_t<From> from)
+	constexpr auto vector_cast(From from)
 	{
 		return vec4_t<To>{static_cast<To>(from[0]),
 			static_cast<To>(from[1]),
@@ -20,7 +21,7 @@ namespace pixel_store
 
 	namespace color_profiles
 	{
-		class linear
+		struct linear
 		{
 			template<class T>
 			static constexpr auto to_linear(vec4_t<T> val) {return val;}
@@ -29,23 +30,25 @@ namespace pixel_store
 			static constexpr auto from_linear(vec4_t<T> val) {return val;}
 		};
 
-		template<float Gamma>
-		class gamma
+		template<int Num = 22, int Denom = 10>
+		struct gamma
 		{
 			static constexpr auto to_linear(vec4_t<float> val)
 			{
-				return vec4_t<float>{std::pow(val[0], 1.0f/Gamma),
-					std::pow(val[1], 1.0f/Gamma),
-					std::pow(val[2], 1.0f/Gamma),
-					std::pow(val[3], 1.0f/Gamma)};
+				constexpr auto gamma_val = static_cast<float>(Num)/static_cast<float>(Denom);
+				return vec4_t<float>{std::pow(val[0], 1.0f/gamma_val),
+					std::pow(val[1], 1.0f/gamma_val),
+					std::pow(val[2], 1.0f/gamma_val),
+					std::pow(val[3], 1.0f/gamma_val)};
 			}
 
 			static constexpr auto from_linear(vec4_t<float> val)
 			{
-				return vec4_t<float>{std::pow(val[0], Gamma),
-					std::pow(val[1], Gamma),
-					std::pow(val[2], Gamma),
-					std::pow(val[3], Gamma)};
+				constexpr auto gamma_val = static_cast<float>(Num)/static_cast<float>(Denom);
+				return vec4_t<float>{std::pow(val[0], gamma_val),
+					std::pow(val[1], gamma_val),
+					std::pow(val[2], gamma_val),
+					std::pow(val[3], gamma_val)};
 			}
 		};
 	}
@@ -113,19 +116,23 @@ namespace pixel_store
 	template<class To>
 	constexpr To convert_to(rgba_value<float> from);
 
+	template<class To>
+	constexpr To convert_to(rgba_value<uint8_t, color_profiles::gamma<>> from);
+
 	template<>
-	constexpr auto convert_to<rgba_value<uint8_t, color_profiles::Gamma<2.2f>>>(rgba_value<float> from)
+	constexpr rgba_value<uint8_t, color_profiles::gamma<>>
+	convert_to<rgba_value<uint8_t, color_profiles::gamma<>>>(rgba_value<float> from)
 	{
-		using profile = color_profiles::Gamma<2.2f>;
-		auto val = 255.0f*profile::from_linear(from);
-		return rgba_value{vector_cast<uint8_t>(val)};
+		using profile = color_profiles::gamma<>;
+		auto val = 255.0f*profile::from_linear(from.value());
+		return rgba_value<uint8_t, profile>{vector_cast<uint8_t>(val)};
 	}
 
 	template<>
-	cosntexpr auto convert_to<rgba_value<>>(rgba_value<uint8_t, color_profiles::Gamma<2.2f>> from)
+	constexpr rgba_value<> convert_to<rgba_value<>>(rgba_value<uint8_t, color_profiles::gamma<>> from)
 	{
 		auto val = vector_cast<float>(from.value())/255.0f;
-		using profile = color_profiles::Gamma<2.2f>;
+		using profile = color_profiles::gamma<>;
 		return rgba_value<>{profile::to_linear(val)};
 	}
 
@@ -141,7 +148,7 @@ namespace pixel_store
 		constexpr auto blue_v = rgba_value<T>{0, 0, 1, 1};
 
 		template<class T>
-		constexpr auto white_v rgba_value<T>{1, 1, 1, 1};
+		constexpr auto white_v = rgba_value<T>{1, 1, 1, 1};
 
 		template<class T>
 		constexpr auto cyan_v = rgba_value<T>{0, 1, 1, 1};
@@ -153,7 +160,7 @@ namespace pixel_store
 		constexpr auto yellow_v = rgba_value<T>{1, 1, 0, 1};
 
 		template<class T>
-		constexpr auto black_v rgba_value<T>{0, 0, 0, 1};
+		constexpr auto black_v = rgba_value<T>{0, 0, 0, 1};
 	}
 }
 
