@@ -10,39 +10,80 @@ namespace pixel_store
 	class rgba_value
 	{
 	public:
-		T red() const
+        rgba_value() = default;
+
+		constexpr explicit rgba_value(T r, T g, T b, T a):m_value{r, g, b, a}{}
+
+		constexpr T red() const
 		{ return m_value[0]; }
 
-		T green() const
-		{ return m_value[1]; }
-
-		T blue() const
-		{ return m_value[2]; }
-
-		T alpha() const
-		{ return m_value[2]; }
-
-		T& red()
+		constexpr T& red()
 		{ return m_value[0]; }
 
-		T& green()
+		constexpr T green() const
 		{ return m_value[1]; }
 
-		T& blue()
+		constexpr T& green()
+		{ return m_value[1]; }
+
+		constexpr T blue() const
 		{ return m_value[2]; }
 
-		T& alpha()
+		constexpr T& blue()
 		{ return m_value[2]; }
 
-		vec4_t<T> value() const
+		constexpr T alpha() const
+		{ return m_value[3]; }
+
+		constexpr T& alpha()
+		{ return m_value[3]; }
+
+		constexpr vec4_t<T> value() const
 		{ return m_value; }
 
-		vec4_t<T>& value()
+		constexpr vec4_t<T>& value()
 		{ return m_value; }
 
 	private:
 		vec4_t<T> m_value;
 	};
+
+	template<class T>
+	constexpr auto red_v = rgba_value<T>{1, 0, 0, 1};
+
+	template<class T>
+	constexpr auto green_v = rgba_value<T>{0, 1, 0, 1};
+
+	template<class T>
+	constexpr auto blue_v = rgba_value<T>{0, 0, 1, 1};
+
+	template<class T>
+	constexpr auto white_v rgba_value<T>{1, 1, 1, 1};
+
+	template<class T>
+	constexpr auto cyan_v = rgba_value<T>{0, 1, 1, 1};
+
+	template<class T>
+	constexpr auto magenta_v = rgba_value<T>{1, 0, 1, 1};
+
+	template<class T>
+	constexpr auto yellow_v = rgba_value<T>{1, 1, 0, 1};
+
+	template<class T>
+	constexpr auto black_v rgba_value<T>{0, 0, 0, 1};
+
+	template<class T>
+	constexpr auto operator==(rgba_value<T> a, rgba_value<T> b)
+	{
+		auto const val = a.value() - b.value();
+		return val[0] == 0 && val[1]==0 && val[2]==0 && val[3]==0;
+	}
+
+	template<class T>
+	constexpr auto operator!=(rgba_value<T> a, rgba_value<T> b)
+	{
+		return !(a == b);
+	}
 }
 
 #endif
