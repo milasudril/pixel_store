@@ -16,23 +16,12 @@ namespace pixel_store
 			m_height{height}
 		{}
 
-		image_span<T const> pixels() const
+		image_span<T const> const_pixels() const
 		{
 			return image_span<T const>{m_pixels.get(), m_width, m_height};
 		}
 
-		image_span<T> pixels()
-		{
-			return image_span<T>{m_pixels.get(), m_width, m_height};
-		}
-
-		T operator()(size_t x, size_t y) const
-		{
- 			auto const offset = m_width * y + x;
-			return m_pixels[offset];
-		}
-
-		T& operator()(size_t x, size_t y)
+		T& operator()(size_t x, size_t y) const
 		{
 			auto const offset = m_width * y + x;
 			return m_pixels[offset];
